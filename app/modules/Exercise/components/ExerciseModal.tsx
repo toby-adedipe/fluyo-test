@@ -35,7 +35,7 @@ function Button({ style, onPress, text, disabled }: ButtonProps) {
   );
 }
 
-// Reusable Exercise component
+// Exercise component
 export default function ExerciseModal({
   exercise,
   changeQuestion,
