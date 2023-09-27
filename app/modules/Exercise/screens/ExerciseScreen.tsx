@@ -1,67 +1,74 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ExerciseModal from '../components/ExerciseModal'
+import { collection, onSnapshot, } from "firebase/firestore";
+import { db } from '../../../utils/config';
+
+interface ExerciseProp {
+  id: number;
+  correctAnswer: string;
+  englishSentence: string;
+  germanSentence: string;
+  highlightedWord: string;
+  options: string[];
+}
 
 export default function ExerciseScreen() {
   const [activeId, setActiveId] = useState<number>(1);
-  const exercises = [
-    {
-      id: 1,
-      englishSentence: "The cat is black",
-      highlightedWord: "cat",
-      germanSentence: "Die _______ ist schwarz.",
-      options: ["Katze", "Hund", "Vogel", "Fisch"],
-      correctAnswer: "Katze"
-    },
-    {
-      id: 2,
-      englishSentence: "The car is fast",
-      highlightedWord: "car",
-      germanSentence: "Das _______ ist schnell.",
-      options: ["Auto", "Fahrrad", "Bus", "Zug"],
-      correctAnswer: "Auto"
-    },
-    {
-      id: 3,
-      englishSentence: "The book is interesting",
-      highlightedWord: "book",
-      germanSentence: "Das _______ ist interessant.",
-      options: ["Buch", "Zeitung", "Magazin", "Brief"],
-      correctAnswer: "Buch"
-    },
-    {
-      id: 4,
-      englishSentence: "The dog is friendly",
-      highlightedWord: "dog",
-      germanSentence: "Der _______ ist freundlich.",
-      options: ["Hund", "Katze", "Pferd", "Kaninchen"],
-      correctAnswer: "Hund"
-    },
-    {
-      id: 5,
-      englishSentence: "The tree is tall",
-      highlightedWord: "tree",
-      germanSentence: "Der _______ ist groß.",
-      options: ["Baum", "Blume", "Gras", "Strauch"],
-      correctAnswer: "Baum"
-    }
-  ]
+  const [exercises, setExercises] = useState<ExerciseProp[]>([]);
+  const [error, setError] = useState<string| null >(null);
+ 
+  useEffect(() => {
+  // Initialize an empty array to store the fetched data
+    const exercisesArray:ExerciseProp[] = [];
+    const exercisesCollection = collection(db, "quizExercises");
+
+    // Set up a listener to fetch and update data in real-time
+    const unsubscribe = onSnapshot(exercisesCollection, 
+      (querySnapshot: any) => {
+
+        // Clear the existing data in the array
+        exercisesArray.length = 0;
+
+        // Loop through the documents in the "exercises" collection
+        querySnapshot.forEach((doc: any) => {
+          // Get the data from each document and add it to the array
+          const exerciseData = doc.data();
+          exercisesArray.push(exerciseData);
+        });
+  
+        setExercises(exercisesArray);
+      },
+      (error: any) => {
+        // Handle error
+        console.error("Error fetching exercises:", error);
+        setError(error)
+      }
+    );
+  
+    // Unsubscribe from the listener when the component is unmounted or when the dependencies change
+    return () => unsubscribe();
+  }, [])
 
   function changeQuestion() {
-    if(activeId !== exercises.length -1 ){
-      let newActiveId = activeId + 1;
-      setActiveId(newActiveId)
-    } else {
-      setActiveId(1);
-    }
+    setActiveId(prevActiveId => (prevActiveId !== exercises.length - 1 ? prevActiveId + 1 : 1));
   }
-
+  
   return (
     <View style={styles.container}>
-      <ExerciseModal 
-        exercise={exercises[activeId]}
-        changeQuestion={changeQuestion}
-      />
+      {error ? (
+        <Text>Error occurred while fetching data</Text>
+      ) : exercises.length > 0 ? (
+        <ExerciseModal 
+          exercise={exercises[activeId]}
+          changeQuestion={changeQuestion}
+        />
+      ) : (
+        <View style={styles.activityIndicator}>
+          <ActivityIndicator size="large" />
+          <Text>Fetching Data...</Text>
+        </View>
+      )}
     </View>
   )
 }
@@ -70,5 +77,11 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'flex-end',
     flex: 1,
+  },
+  activityIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
   }
 })

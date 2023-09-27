@@ -1,27 +1,20 @@
-import { 
-  View, 
-  Text,
-  StyleSheet, 
-  ViewProps, 
-  TouchableOpacity 
-} from 'react-native'
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ViewProps, TouchableOpacity } from 'react-native';
 import AnswerModal from './AnswerModal';
 import OptionButton from './OptionButtons';
 import { colors } from '../../../utils/colors';
 
-interface Props extends ViewProps {
-  exercise: {
-    id: number;
-    englishSentence: string;
-    highlightedWord: string;
-    germanSentence: string;
-    options: string[];
-    correctAnswer: string;
-  },
-  changeQuestion(): void;
+// Interface for Exercise data
+interface Exercise {
+  id: number;
+  englishSentence: string;
+  highlightedWord: string;
+  germanSentence: string;
+  options: string[];
+  correctAnswer: string;
 }
 
+// Interface for Button component props
 interface ButtonProps {
   style: object;
   onPress: () => void;
@@ -29,6 +22,7 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
+// Reusable Button component
 function Button({ style, onPress, text, disabled }: ButtonProps) {
   return (
     <TouchableOpacity
@@ -41,10 +35,14 @@ function Button({ style, onPress, text, disabled }: ButtonProps) {
   );
 }
 
+// Reusable Exercise component
 export default function ExerciseModal({
   exercise,
   changeQuestion,
-}: Props) {
+}: {
+  exercise: Exercise;
+  changeQuestion(): void;
+}) {
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
@@ -53,9 +51,9 @@ export default function ExerciseModal({
   }
 
   function onChangeQuestion() {
-    toggleModal();
-    setSelectedOption("");
-    changeQuestion();
+    toggleModal(); // Close modal
+    setSelectedOption(""); // Reset state
+    changeQuestion(); // Change question
   }
 
   function toggleModal() {
@@ -64,6 +62,16 @@ export default function ExerciseModal({
 
   function checkAnswer(): boolean {
     return selectedOption === exercise.correctAnswer;
+  }
+
+  // Determine highlightedContainerStyle based on current state
+  let highlightedContainerStyle = styles.highlightedContainer;
+  if (modalVisible) {
+    if (checkAnswer()) {
+      highlightedContainerStyle = styles.correctHighlightedContainer;
+    } else {
+      highlightedContainerStyle = styles.wrongHighlightedContainer;
+    }
   }
 
   return (
@@ -94,8 +102,8 @@ export default function ExerciseModal({
               <View key={index} style={styles.sentencePart}>
                 <Text style={styles.sentenceText}>{part}</Text>
                 {index === 0 && (
-                  <View style={styles.highlightedContainer}>
-                    <Text style={styles.highlightedText}>
+                  <View style={highlightedContainerStyle}>
+                    <Text style={!modalVisible ? styles.highlightedText : styles.visibleHighlightedText}>
                       {selectedOption}
                     </Text>
                   </View>
@@ -112,7 +120,7 @@ export default function ExerciseModal({
           onSelectOption={onSelectOption}
         />
       </View>
-      <View style={styles.btnContainer}>
+      <View>
         {selectedOption.length > 0 ? (
           <Button
             style={styles.continueBtn}
@@ -132,6 +140,7 @@ export default function ExerciseModal({
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'space-between',
@@ -142,7 +151,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     gap: 200,
   },
-  btnContainer: {},
   quizContainer: {
     alignItems: 'center',
     paddingTop: 32,
@@ -166,17 +174,38 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   highlightedContainer: {
-    backgroundColor: colors.white,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.white,
+  },
+  correctHighlightedContainer: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.lightGreen,
+  },
+  wrongHighlightedContainer: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.red,
   },
   highlightedText: {
     fontWeight: '600',
     fontSize: 20,
     color: colors.backgroundColor,
+  },
+  visibleHighlightedText: {
+    fontWeight: '600',
+    fontSize: 20,
+    color: colors.white,
   },
   highlightedWord: {
     fontWeight: "bold",

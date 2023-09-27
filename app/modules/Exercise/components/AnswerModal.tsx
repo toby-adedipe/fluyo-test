@@ -24,18 +24,22 @@ export default function AnswerModal({
   const isAnswerCorrect = checkAnswer();
 
   return (
+    // render the model component
     <Modal animationType="slide" transparent={true} visible={modalVisible}>
       <View style={styles.modal}>
         <View style={isAnswerCorrect ? styles.correctModalContainer : styles.wrongModalContainer}>
           {isAnswerCorrect ? (
+            // Display the "Great Job!" message if the answer is correct
             <Text style={[styles.answer, { fontWeight: "bold" }]}>Great Job!</Text>
           ) : (
+            // Display the correct answer if the answer is wrong
             <View style={styles.modalText}>
               <Text style={[styles.answer, { fontWeight: "bold" }]}>Answer:</Text>
               <Text style={styles.answer}>{correctAnswer}</Text>
             </View>
           )}
           <TouchableOpacity style={styles.modalBtn} onPress={onChangeQuestion}>
+            {/* Change the button text color based on the answer correctness */}
             <Text style={isAnswerCorrect ? styles.correctBtnText : styles.wrongBtnText}>CONTINUE</Text>
           </TouchableOpacity>
         </View>
@@ -44,6 +48,7 @@ export default function AnswerModal({
   );
 }
 
+// Common styles for the modal container
 const commonModalContainerStyles = {
   borderTopLeftRadius: 40,
   borderTopRightRadius: 40,

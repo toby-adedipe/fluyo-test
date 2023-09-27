@@ -29,6 +29,7 @@ const OptionButton = ({
   );
 };
 
+// OptionButtons component that shows all the OptionButtons
 export default function OptionButtons({ 
   options, 
   selectedOption,
